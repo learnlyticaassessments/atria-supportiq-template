@@ -1,0 +1,45 @@
+name: grade
+
+# Runs on every push so the learner gets fast feedback in the platform's status panel.
+# NOTE: this runs only the learner-visible smoke tests committed under tests/.
+# The authoritative, hidden-test grading is performed server-side by the platform
+# grader (it clones this repo at the pushed commit SHA and injects hidden tests).
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run smoke tests
+        run: |
+          if [ -d tests ] && ls tests/test_*.py >/dev/null 2>&1; then
+            pytest -q tests --junitxml=report.xml
+          else
+            echo "No learner-visible tests committed yet — this is expected."
+            echo "Your work is graded by the platform's Run Test button."
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grade-report
+          path: report.xml
+          if-no-files-found: ignore
