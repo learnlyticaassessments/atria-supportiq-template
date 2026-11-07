@@ -1,36 +1,22 @@
-# Day 01 — Triage incoming support tickets
+# Day 01 — Prioritise the SupportIQ discovery backlog
 
-**Goal:** build a tiny TF-IDF + logistic-regression classifier that routes a support ticket to a
-queue, and expose a clean function the rest of the system can call.
+**Scenario:** During SupportIQ discovery the product team captured raw backlog items, each with a business `value` and an engineering `effort`, and needs them ranked before sprint planning.
 
-## What to build
+## Your task
+Implement two module-level functions.
 
-Edit `day01/solution.py`. Implement the functions below. Do not rename them or change their
-signatures — the grader calls them by name.
+1. `score_backlog(items)` — `items` is a list of dicts, each `{"id": str, "value": int, "effort": int}`. Compute each item's priority score as `round(value / effort, 2)`. Return a list of `(id, score)` tuples sorted by score **descending**, breaking ties by `id` **ascending**. Ignore (skip) any item whose `effort` is 0 or negative.
 
-### `train(rows: list[dict]) -> object`
-- `rows` is a list of `{"text": str, "queue": str}`.
-- Build a scikit-learn `Pipeline` of `TfidfVectorizer` → `LogisticRegression`.
-- Fit it on the rows and return the fitted pipeline.
+2. `validate_user_story(story)` — return `True` only when `story` is a non-empty string matching the shape `As a <role>, I want <goal>, so that <benefit>` (the three clauses separated by `, I want ` and `, so that `, each clause non-empty after stripping). Otherwise return `False`.
 
-### `triage(model, text: str) -> str`
-- Return the predicted `queue` for `text` using the fitted `model`.
-
-### `evaluate(model, rows: list[dict]) -> dict`
-Return a dict with:
-- `"accuracy"` — accuracy on `rows`, rounded to 3 decimals (float)
-- `"n"` — number of rows evaluated (int)
-
-## Run it
-
-```bash
-cd day01
-python solution.py
+## Example
+```python
+score_backlog([{"id": "B2", "value": 8, "effort": 2},
+               {"id": "B1", "value": 9, "effort": 3}])
+# -> [('B2', 4.0), ('B1', 3.0)]
+validate_user_story('As a support agent, I want refunds, so that customers stay')  # -> True
 ```
 
-A small in-file dataset is included so you can try your code. The official grade uses a larger,
-hidden dataset with the same `{text, queue}` schema.
 
-## Submit
-
-Commit your changes, push, then click **Run Test** in the platform.
+---
+Edit `day01/solution.py`, commit & push, then click **Run Test** in the platform.
